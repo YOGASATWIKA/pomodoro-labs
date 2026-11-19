@@ -5,7 +5,8 @@ from pomodoro_labs import config
 
 
 def _home(tmp_path, monkeypatch):
-    monkeypatch.setenv("HOME", str(tmp_path))
+    # Windows membaca ~ dari USERPROFILE, jadi patch _home() langsung agar sama di semua OS
+    monkeypatch.setattr(config, "_home", lambda: str(tmp_path))
     monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / ".config"))
     monkeypatch.setattr(config.sys, "platform", "linux")
 
@@ -38,9 +39,9 @@ def test_save_roundtrip_and_bad_json(tmp_path, monkeypatch):
 
 
 def test_paths_per_os(tmp_path, monkeypatch):
-    monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.setattr(config, "_home", lambda: str(tmp_path))
     monkeypatch.setenv("APPDATA", str(tmp_path / "AppData"))
     monkeypatch.setattr(config.sys, "platform", "win32")
-    assert config.config_dir().endswith(os.path.join("AppData", "pomodoro-labs"))
+    assert config.config_dir() == os.path.join(str(tmp_path), "AppData", "pomodoro-labs")
     monkeypatch.setattr(config.sys, "platform", "darwin")
     assert "Application Support" in config.config_dir()

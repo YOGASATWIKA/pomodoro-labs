@@ -20,7 +20,7 @@ def app():
 
 @pytest.fixture(autouse=True)
 def isolated(tmp_path, monkeypatch):
-    monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.setattr(config, "_home", lambda: str(tmp_path))
     monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / ".config"))
     monkeypatch.setattr(config.sys, "platform", "linux")
     monkeypatch.setattr("pomodoro_labs.platform_.notify", lambda *a, **k: None)
